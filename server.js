@@ -1,9 +1,23 @@
 const inquirer = require("inquirer");
-const data = require("./db");
+const data = require("./db/index");
 const mysql2 = require("mysql2");
 const db = require("./db");
 require("console.table");
+const sequelize = require("./config/connection");
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3001;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const db = mysql2.createConnection({
+	host: "localhost",
+	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	port: 3306,
+});
 function init() {
 	inquirer.prompt({
 		type: "list",
@@ -100,3 +114,12 @@ function newRole() {
 			});
 		});
 }
+sequelize.sync({ force: true }).then(() => {
+	app.listen(PORT, () => console.log("Now listening"));
+});
+
+init();
+
+app.listen(PORT, () => {
+	console.log(`Server running on port ${PORT}`);
+});
